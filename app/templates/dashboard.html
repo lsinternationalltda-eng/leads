@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LS International — Meta Leads</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090b;--surface:#111113;--surface2:#18181b;--border:#27272a;
+  --gold:#D4AF37;--text:#fafafa;--muted:#71717a;
+  --green:#4ade80;--red:#f87171;--blue:#60a5fa;--amber:#fbbf24;--purple:#a78bfa;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column;min-height:100vh}
+
+/* Header */
+header{align-items:center;background:var(--surface);border-bottom:1px solid var(--border);display:flex;height:52px;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100}
+.logo{color:var(--gold);font-size:14px;font-weight:800;letter-spacing:2px}
+.logo-sub{color:var(--muted);font-size:11px;margin-left:8px}
+.hright{align-items:center;display:flex;gap:10px}
+.btn-sync{background:var(--gold);border:none;border-radius:7px;color:#09090b;cursor:pointer;font-size:12px;font-weight:700;padding:6px 14px}
+.btn-sync:disabled{opacity:.4;cursor:not-allowed}
+.btn-out{background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);cursor:pointer;font-size:12px;padding:6px 12px}
+.sync-msg{color:var(--muted);font-size:11px}
+
+/* Filter bar */
+.filter-bar{align-items:center;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:10px;padding:8px 24px;position:sticky;top:52px;z-index:90}
+.filter-bar label{color:var(--muted);font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+.filter-bar select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;min-width:180px;outline:none;padding:5px 10px}
+.filter-bar select:focus{border-color:var(--gold)}
+.filter-sep{background:var(--border);height:20px;margin:0 4px;width:1px}
+
+/* Alerts */
+.alerts{display:flex;flex-direction:column;gap:6px;padding:12px 24px 0}
+.alert{align-items:center;border-radius:7px;display:flex;font-size:12px;gap:8px;padding:8px 12px}
+.alert-error{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--red)}
+.alert-warn{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--amber)}
+.alert-ok{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);color:var(--green)}
+
+/* Layout */
+.layout{display:flex;flex:1;overflow:hidden}
+nav{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;gap:2px;padding:14px 10px;width:186px}
+nav a{align-items:center;border-radius:6px;color:var(--muted);cursor:pointer;display:flex;font-size:13px;gap:8px;padding:8px 10px;transition:all .15s;user-select:none}
+nav a:hover{background:var(--surface2);color:var(--text)}
+nav a.active{background:rgba(212,175,55,.12);color:var(--gold);font-weight:600}
+.nl{color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.7px;margin:10px 10px 3px;text-transform:uppercase}
+.nb{background:var(--red);border-radius:9px;color:#fff;font-size:10px;font-weight:700;margin-left:auto;padding:1px 6px}
+
+main{flex:1;overflow-y:auto;padding:22px 24px}
+.tab{display:none}.tab.active{display:block}
+
+/* Stats */
+.stats{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:14px 16px}
+.sl{color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.4px;margin-bottom:6px;text-transform:uppercase}
+.sv{font-size:26px;font-weight:800;line-height:1}
+.st{font-size:11px;margin-top:3px}
+.gold{color:var(--gold)}.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}.amber{color:var(--amber)}.purple{color:var(--purple)}
+
+/* Charts */
+.charts{display:grid;gap:14px;grid-template-columns:1fr 1fr;margin-bottom:20px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:16px}
+.chart-title{font-size:13px;font-weight:600;margin-bottom:14px}
+.chart-wrap{height:180px;position:relative}
+
+/* Section */
+.sh{align-items:center;display:flex;justify-content:space-between;margin-bottom:12px}
+.st2{font-size:14px;font-weight:700}
+.ssub{color:var(--muted);font-size:12px}
+
+/* Period tabs */
+.period-tabs{display:flex;gap:4px;margin-bottom:16px}
+.ptab{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px;font-weight:600;padding:5px 12px;transition:all .15s}
+.ptab:hover{color:var(--text)}
+.ptab.active{background:rgba(212,175,55,.15);border-color:rgba(212,175,55,.4);color:var(--gold)}
+
+/* Table */
+.tw{background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden}
+table{border-collapse:collapse;width:100%}
+th{background:var(--surface2);color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.4px;padding:9px 12px;text-align:left;text-transform:uppercase;white-space:nowrap}
+th.r,td.r{text-align:right}
+td{border-top:1px solid var(--border);font-size:12.5px;padding:9px 12px;vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.02)}
+.badge{border-radius:4px;font-size:10px;font-weight:600;padding:2px 6px}
+.b-green{background:rgba(74,222,128,.12);color:var(--green)}
+.b-red{background:rgba(248,113,113,.12);color:var(--red)}
+.b-muted{background:var(--surface2);color:var(--muted)}
+.b-gold{background:rgba(212,175,55,.12);color:var(--gold)}
+.b-blue{background:rgba(96,165,250,.12);color:var(--blue)}
+.b-purple{background:rgba(167,139,250,.12);color:var(--purple)}
+.empty{color:var(--muted);font-size:13px;padding:28px;text-align:center}
+.pag{align-items:center;display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.pb{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:11px;padding:4px 11px}
+.pb:disabled{opacity:.35;cursor:not-allowed}
+.pi{color:var(--muted);font-size:11px}
+
+/* Campaign KPIs */
+.camp-kpis{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-bottom:16px}
+.ck{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.ck-l{color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.4px;margin-bottom:4px;text-transform:uppercase}
+.ck-v{font-size:22px;font-weight:800}
+
+/* Client cards */
+.cc-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.cc{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:16px}
+.cc-h{align-items:center;display:flex;margin-bottom:12px}
+.cc-n{font-size:14px;font-weight:700}
+.cc-units{display:flex;flex-direction:column;gap:6px}
+.ur{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 12px}
+.un{font-size:12.5px;font-weight:600}
+.uc{color:var(--muted);font-size:11px}
+.um{align-items:center;display:flex;gap:6px;margin-top:4px}
+
+/* Buttons */
+.btn{border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;padding:7px 16px}
+.btn-gold{background:var(--gold);color:#09090b}
+.btn-sm{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);cursor:pointer;font-size:11px;padding:3px 9px}
+.btn-sm:hover{border-color:var(--gold);color:var(--gold)}
+
+/* Modal */
+.overlay{align-items:center;background:rgba(0,0,0,.8);display:none;inset:0;justify-content:center;position:fixed;z-index:200}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:11px;max-width:420px;padding:24px;width:100%}
+.modal h3{font-size:15px;margin-bottom:16px}
+.fg{margin-bottom:12px}
+.fg label{color:var(--muted);display:block;font-size:10px;font-weight:600;letter-spacing:.4px;margin-bottom:4px;text-transform:uppercase}
+.fg input,.fg select{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none;padding:8px 10px;transition:border .2s;width:100%}
+.fg input:focus,.fg select:focus{border-color:var(--gold)}
+.fg .hint{color:var(--muted);font-size:10px;margin-top:3px}
+.mf{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn-cancel{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:12px;padding:7px 14px}
+
+/* Toast */
+.toast{background:#1a1a1a;border-left:3px solid var(--gold);border-radius:7px;bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,.5);color:var(--text);font-size:12px;max-width:300px;opacity:0;padding:10px 14px;position:fixed;right:20px;transform:translateY(6px);transition:all .3s;z-index:999}
+.toast.show{opacity:1;transform:none}
+.toast.err{border-color:var(--red)}
+.toast.ok{border-color:var(--green)}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center">
+    <div class="logo">LS INTERNATIONAL</div>
+    {% if not is_admin %}<span class="logo-sub">{{ client_name }}</span>{% endif %}
+  </div>
+  <div class="hright">
+    <span class="sync-msg" id="syncMsg"></span>
+    {% if is_admin %}<button class="btn-sync" onclick="syncAgora()">⟳ Sync</button>{% endif %}
+    <button class="btn-out" onclick="location.href='/logout'">Sair</button>
+  </div>
+</header>
+
+<!-- Filtro global de unidade -->
+<div class="filter-bar">
+  <label>Unidade:</label>
+  <select id="globalUnit" onchange="onUnitChange()">
+    <option value="">Todas</option>
+  </select>
+  <div class="filter-sep"></div>
+  <label>Período padrão:</label>
+  <select id="globalPeriod" onchange="onPeriodChange()">
+    <option value="last_7d">Últimos 7 dias</option>
+    <option value="last_14d">Últimos 14 dias</option>
+    <option value="last_30d" selected>Últimos 30 dias</option>
+    <option value="yesterday">Ontem</option>
+    <option value="today">Hoje</option>
+  </select>
+</div>
+
+<!-- Alertas -->
+<div class="alerts" id="alertsBar"></div>
+
+<div class="layout">
+  <nav>
+    <div class="nl">Visão Geral</div>
+    <a class="active" onclick="go('overview',this)">📊 Dashboard</a>
+    <div class="nl">Análise</div>
+    <a onclick="go('campanhas',this)">📈 Campanhas</a>
+    <a onclick="go('leads',this)">👤 Leads</a>
+    <a onclick="go('divergencias',this)">⚠️ Divergências <span class="nb" id="divBadge" style="display:none">0</span></a>
+    {% if is_admin %}
+    <div class="nl">Configuração</div>
+    <a onclick="go('clientes',this)">🏢 Clientes & Unidades</a>
+    {% else %}
+    <div class="nl">Configuração</div>
+    <a onclick="go('unidades',this)">📍 Minhas Unidades</a>
+    {% endif %}
+  </nav>
+
+  <main>
+
+    <!-- OVERVIEW -->
+    <div class="tab active" id="tab-overview">
+
+      <!-- Bloco 1: Leads por canal -->
+      <div style="color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.5px;margin-bottom:5px;text-transform:uppercase">Leads recebidos</div>
+      <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-bottom:14px">
+        <div class="stat" style="border-color:rgba(212,175,55,.3)">
+          <div class="sl">Total Leads</div>
+          <div class="sv gold" id="s-leads">–</div>
+          <div class="st" style="color:var(--muted)">todos os canais</div>
+        </div>
+        <div class="stat">
+          <div class="sl">📋 Formulário</div>
+          <div class="sv blue" id="s-form">–</div>
+          <div class="st" style="color:var(--muted)">Lead Ads</div>
+        </div>
+        <div class="stat">
+          <div class="sl">💬 Mensagem WA</div>
+          <div class="sv green" id="s-wa">–</div>
+          <div class="st" style="color:var(--muted)">Click to WhatsApp</div>
+        </div>
+        <div class="stat">
+          <div class="sl">✅ Conf. Planilha</div>
+          <div class="sv purple" id="s-pl">–</div>
+          <div class="st" style="color:var(--muted)">chegou na planilha</div>
+        </div>
+        <div class="stat" style="border-color:rgba(248,113,113,.25)">
+          <div class="sl">⚠️ Divergências</div>
+          <div class="sv red" id="s-div">–</div>
+          <div class="st" style="color:var(--muted)">não chegaram</div>
+        </div>
+      </div>
+
+      <!-- Bloco 2: Campanhas do período -->
+      <div style="align-items:center;display:flex;gap:8px;margin-bottom:5px">
+        <div style="color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase">Campanhas</div>
+        <div class="period-tabs" style="margin-bottom:0">
+          <button class="ptab active" onclick="setOvPeriod('today',this)">Hoje</button>
+          <button class="ptab" onclick="setOvPeriod('yesterday',this)">Ontem</button>
+          <button class="ptab" onclick="setOvPeriod('last_7d',this)">7d</button>
+          <button class="ptab" onclick="setOvPeriod('last_14d',this)">14d</button>
+          <button class="ptab" onclick="setOvPeriod('last_30d',this)">30d</button>
+        </div>
+      </div>
+      <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-bottom:14px">
+        <div class="stat" style="border-color:rgba(96,165,250,.25)">
+          <div class="sl">💰 Total Gasto</div>
+          <div class="sv blue" id="s-gasto" style="font-size:20px">–</div>
+        </div>
+        <div class="stat" style="border-color:rgba(251,191,36,.25)">
+          <div class="sl">📉 CPL Meta</div>
+          <div class="sv amber" id="s-cpl" style="font-size:20px">–</div>
+          <div class="st" style="color:var(--muted)">custo por lead</div>
+        </div>
+        <div class="stat">
+          <div class="sl">📣 Camp. Ativas</div>
+          <div class="sv" id="s-camp" style="color:var(--text)">–</div>
+        </div>
+        {% if is_admin %}<div class="stat"><div class="sl">🏢 Clientes</div><div class="sv amber" id="s-cli">–</div></div>{% endif %}
+        <div class="stat"><div class="sl">📍 Unidades</div><div class="sv purple" id="s-uni">–</div></div>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="charts" style="margin-bottom:14px">
+        <div class="chart-card">
+          <div class="chart-title">📊 Leads por dia</div>
+          <div class="chart-wrap"><canvas id="chartLeads"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">💰 Gasto por dia (R$)</div>
+          <div class="chart-wrap"><canvas id="chartGasto"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Ranking campanhas -->
+      <div class="sh">
+        <span class="st2">🏆 Campanhas por performance</span>
+        <a onclick="go('campanhas', document.querySelector('[onclick*=campanhas]'))" style="color:var(--gold);cursor:pointer;font-size:12px">Ver todas →</a>
+      </div>
+      <div class="tw" id="topCampTbl" style="margin-bottom:16px"><div class="empty">Carregando…</div></div>
+
+      <div class="sh">
+        <span class="st2">Últimos Leads</span>
+        <span class="ssub" id="lastLeadsTotal"></span>
+      </div>
+      <div class="tw" id="overviewTbl"><div class="empty">Carregando…</div></div>
+    </div>
+
+    <!-- CAMPANHAS -->
+    <div class="tab" id="tab-campanhas">
+      <div class="sh" style="margin-bottom:12px">
+        <span class="st2">Campanhas</span>
+        <span class="ssub" id="campPeriodLabel"></span>
+      </div>
+      <div class="period-tabs" id="periodTabs">
+        <button class="ptab" onclick="setCampPeriod('today',this)">Hoje</button>
+        <button class="ptab" onclick="setCampPeriod('yesterday',this)">Ontem</button>
+        <button class="ptab active" onclick="setCampPeriod('last_7d',this)">7 dias</button>
+        <button class="ptab" onclick="setCampPeriod('last_14d',this)">14 dias</button>
+        <button class="ptab" onclick="setCampPeriod('last_30d',this)">30 dias</button>
+      </div>
+
+      <div class="camp-kpis">
+        <div class="ck"><div class="ck-l">Gasto Total</div><div class="ck-v gold" id="ck-gasto">R$ –</div></div>
+        <div class="ck"><div class="ck-l">Leads Totais</div><div class="ck-v green" id="ck-leads">–</div></div>
+        <div class="ck"><div class="ck-l">CPL Médio</div><div class="ck-v amber" id="ck-cpl">R$ –</div></div>
+        <div class="ck"><div class="ck-l">Campanhas ativas</div><div class="ck-v blue" id="ck-count">–</div></div>
+      </div>
+
+      <div style="display:grid;gap:14px;grid-template-columns:1fr 1fr;margin-bottom:16px">
+        <div class="chart-card">
+          <div class="chart-title">Leads por campanha</div>
+          <div class="chart-wrap"><canvas id="chartCampLeads"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Gasto por campanha (R$)</div>
+          <div class="chart-wrap"><canvas id="chartCampGasto"></canvas></div>
+        </div>
+      </div>
+
+      <div class="sh"><span class="st2">Comparativo de campanhas</span></div>
+      <div class="tw" id="campTbl"><div class="empty">Carregando…</div></div>
+    </div>
+
+    <!-- LEADS -->
+    <div class="tab" id="tab-leads">
+      <div class="sh">
+        <span class="st2">Todos os Leads</span>
+        <span class="ssub" id="leadsTotal2"></span>
+      </div>
+      <div class="tw" id="leadsTbl"><div class="empty">Carregando…</div></div>
+      <div class="pag">
+        <button class="pb" id="prevBtn" onclick="changePage(-1)" disabled>‹ Anterior</button>
+        <span class="pi" id="pageInfo"></span>
+        <button class="pb" id="nextBtn" onclick="changePage(1)">Próximo ›</button>
+      </div>
+    </div>
+
+    <!-- DIVERGÊNCIAS -->
+    <div class="tab" id="tab-divergencias">
+      <div class="sh">
+        <span class="st2">Divergências detectadas</span>
+        <span class="ssub">Leads que a Meta reportou mas não chegaram no destino</span>
+      </div>
+      <div class="tw" id="divTbl"><div class="empty">Carregando…</div></div>
+    </div>
+
+    <!-- CLIENTES (admin) -->
+    <div class="tab" id="tab-clientes">
+      <div class="sh">
+        <span class="st2">Clientes & Unidades</span>
+        <button class="btn btn-gold" onclick="openModal('Client')" style="padding:6px 14px">+ Novo cliente</button>
+      </div>
+      <div class="cc-grid" id="clientCards"><div class="empty" style="grid-column:1/-1">Carregando…</div></div>
+    </div>
+
+    <!-- UNIDADES (cliente) -->
+    <div class="tab" id="tab-unidades">
+      <div class="sh"><span class="st2">Minhas Unidades</span></div>
+      <div class="tw" id="unitsTbl"><div class="empty">Carregando…</div></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal novo cliente -->
+<div class="overlay" id="modalClient">
+  <div class="modal">
+    <h3>Novo Cliente</h3>
+    <div class="fg"><label>Nome *</label><input id="mc-name" placeholder="Ex: Grupo RM"></div>
+    <div class="fg"><label>Senha de acesso do cliente</label><input id="mc-senha" type="password" placeholder="Senha que o cliente vai usar"><div class="hint">O cliente vê somente as unidades dele.</div></div>
+    <div class="mf"><button class="btn-cancel" onclick="closeAll()">Cancelar</button><button class="btn btn-gold" onclick="salvarClient()">Salvar</button></div>
+  </div>
+</div>
+
+<!-- Modal nova unidade -->
+<div class="overlay" id="modalUnit">
+  <div class="modal">
+    <h3>Nova Unidade</h3>
+    <div class="fg"><label>Cliente *</label><select id="mu-client"></select></div>
+    <div class="fg"><label>Nome da unidade *</label><input id="mu-name" placeholder="Ex: Uberlândia"></div>
+    <div class="fg"><label>Cidade / Estado</label><input id="mu-city" placeholder="Ex: Uberlândia - MG"></div>
+    <div class="fg"><label>URL da planilha de destino</label><input id="mu-sheet" placeholder="https://docs.google.com/spreadsheets/..."></div>
+    <div class="mf"><button class="btn-cancel" onclick="closeAll()">Cancelar</button><button class="btn btn-gold" onclick="salvarUnit()">Salvar</button></div>
+  </div>
+</div>
+
+<!-- Modal nova BM -->
+<div class="overlay" id="modalBm">
+  <div class="modal">
+    <h3>Adicionar Conta BM</h3>
+    <div class="fg"><label>Unidade *</label><select id="mb-unit"></select></div>
+    <div class="fg">
+      <label>Business Manager ID *</label>
+      <input id="mb-bm" placeholder="Ex: 123456789012345">
+      <div class="hint">business.facebook.com → Configurações → Informações do negócio → ID do gerenciador</div>
+    </div>
+    <div class="fg">
+      <label>Ad Account ID *</label>
+      <input id="mb-aa" placeholder="Ex: 987654321 ou act_987654321">
+      <div class="hint">Configurações → Contas → Contas de anúncios → clica → ID</div>
+    </div>
+    <div class="fg">
+      <label>Token do System User *</label>
+      <input id="mb-token" type="password" placeholder="EAAxx...">
+      <div class="hint">Configurações → Usuários do sistema → Gerar novo token → ads_read + leads_retrieval</div>
+    </div>
+    <div class="mf"><button class="btn-cancel" onclick="closeAll()">Cancelar</button><button class="btn btn-gold" onclick="salvarBm()">Salvar</button></div>
+  </div>
+</div>
+
+<!-- Modal senha cliente -->
+<div class="overlay" id="modalSenha">
+  <div class="modal">
+    <h3>🔑 Definir senha — <span id="ms-nome"></span></h3>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Esta senha é usada pelo cliente para acessar o dashboard e ver apenas as unidades dele.</p>
+    <input type="hidden" id="ms-id">
+    <div class="fg"><label>Nova senha *</label><input id="ms-senha" type="password" placeholder="Mínimo 6 caracteres"></div>
+    <div class="fg"><label>Confirmar senha *</label><input id="ms-conf" type="password" placeholder="Repita a senha"></div>
+    <div class="mf"><button class="btn-cancel" onclick="closeAll()">Cancelar</button><button class="btn btn-gold" onclick="salvarSenha()">Salvar senha</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const IS_ADMIN = {{ 'true' if is_admin else 'false' }};
+let leadsPage = 1;
+let campPeriod = 'last_7d';
+let ovPeriod = 'today';
+let chartLeads, chartGasto, chartCampLeads, chartCampGasto;
+const PER = 30;
+
+// Filtros globais
+function unitFilter() { return document.getElementById('globalUnit').value; }
+function periodFilter() { return document.getElementById('globalPeriod').value; }
+
+async function initUnitFilter() {
+  const r = await fetch('/api/units');
+  const units = await r.json();
+  const sel = document.getElementById('globalUnit');
+  units.forEach(u => {
+    const o = document.createElement('option');
+    o.value = u.id;
+    o.textContent = (IS_ADMIN ? u.client_name + ' — ' : '') + u.name;
+    sel.appendChild(o);
+  });
+}
+
+function onUnitChange() { refreshAll(); }
+function onPeriodChange() {
+  campPeriod = periodFilter();
+  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.ptab[onclick*="${campPeriod}"]`)?.classList.add('active');
+  refreshAll();
+}
+
+function refreshAll() {
+  const activeTab = document.querySelector('.tab.active')?.id?.replace('tab-','');
+  if (!activeTab) return;
+  const fn = {overview:loadOverview, campanhas:loadCampanhas, leads:()=>loadLeads(1), divergencias:loadDivergencias, clientes:loadClientes, unidades:loadUnidades};
+  if (fn[activeTab]) fn[activeTab]();
+  loadAlerts();
+}
+
+// Nav
+function go(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  const fn = {overview:loadOverview, campanhas:loadCampanhas, leads:()=>loadLeads(1), divergencias:loadDivergencias, clientes:loadClientes, unidades:loadUnidades};
+  if (fn[name]) fn[name]();
+}
+
+// Toast
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type==='ok'?'ok':type==='err'?'err':'');
+  setTimeout(() => t.className = 'toast', 3500);
+}
+
+// Alertas
+async function loadAlerts() {
+  const uid = unitFilter();
+  const r = await fetch('/api/alerts' + (uid ? '?unit_id='+uid : ''));
+  const items = await r.json();
+  const bar = document.getElementById('alertsBar');
+  if (!items.length) { bar.innerHTML = ''; return; }
+  bar.innerHTML = items.map(a =>
+    `<div class="alert alert-${a.nivel}">
+      ${a.nivel==='error'?'🔴':a.nivel==='warn'?'🟡':'🟢'} ${a.msg}
+    </div>`
+  ).join('');
+}
+
+// Período do overview de campanhas
+function setOvPeriod(p, el) {
+  ovPeriod = p;
+  document.querySelectorAll('#tab-overview .ptab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadOverviewCamps();
+}
+
+// Stats (leads)
+async function loadStats() {
+  const uid = unitFilter();
+  const q = new URLSearchParams({ period: ovPeriod });
+  if (uid) q.set('unit_id', uid);
+  const r = await fetch('/api/stats?' + q);
+  const d = await r.json();
+  document.getElementById('s-leads').textContent = d.total_leads ?? '–';
+  document.getElementById('s-form').textContent = d.leads_form ?? '–';
+  document.getElementById('s-wa').textContent = d.leads_mensagem ?? '–';
+  document.getElementById('s-pl').textContent = d.confirmados_planilha ?? '–';
+  document.getElementById('s-div').textContent = d.divergencias ?? '–';
+  document.getElementById('s-uni').textContent = d.unidades ?? '–';
+  if (IS_ADMIN) document.getElementById('s-cli').textContent = d.clientes ?? '–';
+  // Campanhas
+  document.getElementById('s-gasto').textContent = d.total_gasto != null ? 'R$ ' + d.total_gasto.toFixed(2).replace('.', ',') : '–';
+  document.getElementById('s-cpl').textContent = d.cpl_geral != null ? 'R$ ' + d.cpl_geral.toFixed(2).replace('.', ',') : '—';
+  document.getElementById('s-camp').textContent = d.campanhas_ativas ?? '–';
+  // Badge divergências
+  if (d.divergencias > 0) {
+    document.getElementById('divBadge').textContent = d.divergencias;
+    document.getElementById('divBadge').style.display = '';
+  } else {
+    document.getElementById('divBadge').style.display = 'none';
+  }
+}
+
+// Ranking de campanhas no overview
+async function loadOverviewCamps() {
+  const uid = unitFilter();
+  const q = new URLSearchParams({ period: ovPeriod });
+  if (uid) q.set('unit_id', uid);
+  const camps = await (await fetch('/api/campaigns?' + q)).json();
+  const el = document.getElementById('topCampTbl');
+  if (!camps.length) {
+    el.innerHTML = '<div class="empty">Nenhuma campanha com dados no período. Clique em "⟳ Sync" para importar.</div>';
+    return;
+  }
+  const tipoBadge = t => ({ WA:'<span class="badge b-green">💬 WA</span>', Form:'<span class="badge b-blue">📋 Form</span>', Conv:'<span class="badge b-purple">🛒 Conv</span>' })[t] || '<span class="badge b-muted">—</span>';
+  const cplCls = cpl => cpl == null ? 'b-muted' : cpl > 50 ? 'b-red' : cpl > 25 ? 'b-gold' : 'b-green';
+  const top = camps.slice(0, 6);
+  el.innerHTML = `<table><thead><tr>
+    <th>#</th><th>Campanha</th><th>Tipo</th>
+    <th class="r">Leads</th><th class="r">Gasto</th><th class="r">CPL</th><th class="r">CTR</th>
+  </tr></thead><tbody>
+  ${top.map((c, i) => `<tr>
+    <td style="color:var(--muted);font-weight:700">${i+1}</td>
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.campaign_name}">${c.campaign_name}</td>
+    <td>${tipoBadge(c.tipo)}</td>
+    <td class="r"><strong style="color:var(--gold)">${c.leads}</strong></td>
+    <td class="r" style="color:var(--muted)">R$ ${c.gasto.toFixed(2).replace('.',',')}</td>
+    <td class="r"><span class="badge ${cplCls(c.cpl)}">${c.cpl != null ? 'R$ '+c.cpl.toFixed(2).replace('.',',') : '—'}</span></td>
+    <td class="r" style="color:var(--muted)">${c.ctr}%</td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// Charts comuns
+const CHART_DEFAULTS = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e1e1e', borderColor: '#333', borderWidth: 1, titleColor: '#fafafa', bodyColor: '#aaa' } },
+  scales: { x: { grid: { color: '#1e1e1e' }, ticks: { color: '#555', maxRotation: 0, font: { size: 10 } } }, y: { grid: { color: '#1e1e1e' }, ticks: { color: '#555', font: { size: 10 } }, beginAtZero: true } }
+};
+
+function makeLineChart(id, labels, data, color) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return null;
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{ data, borderColor: color, backgroundColor: color+'22', fill: true, tension: .4, pointRadius: 2, borderWidth: 2 }]
+    },
+    options: { ...CHART_DEFAULTS }
+  });
+}
+
+function makeBarChart(id, labels, data, color) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return null;
+  return new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: color+'88', borderColor: color, borderWidth: 1, borderRadius: 4 }]
+    },
+    options: { ...CHART_DEFAULTS }
+  });
+}
+
+function updateChart(chart, labels, data) {
+  if (!chart) return;
+  chart.data.labels = labels;
+  chart.data.datasets[0].data = data;
+  chart.update();
+}
+
+// Overview
+async function loadOverview() {
+  const uid = unitFilter();
+  const period = periodFilter();
+  const q = new URLSearchParams({ period });
+  if (uid) q.set('unit_id', uid);
+
+  const [tl, leadsR] = await Promise.all([
+    fetch('/api/leads-timeline?' + q).then(r => r.json()),
+    fetch('/api/leads?page=1&per_page=8' + (uid ? '&unit_id='+uid : '')).then(r => r.json()),
+  ]);
+  await Promise.all([loadStats(), loadOverviewCamps()]);
+
+  if (!chartLeads) {
+    chartLeads = makeLineChart('chartLeads', tl.labels, tl.leads, '#D4AF37');
+    chartGasto = makeLineChart('chartGasto', tl.labels, tl.gasto, '#60a5fa');
+  } else {
+    updateChart(chartLeads, tl.labels, tl.leads);
+    updateChart(chartGasto, tl.labels, tl.gasto);
+  }
+
+  document.getElementById('lastLeadsTotal').textContent = leadsR.total + ' leads no total';
+  document.getElementById('overviewTbl').innerHTML = renderLeadsTbl(leadsR.items, false);
+}
+
+// Campanhas
+async function loadCampanhas() {
+  const uid = unitFilter();
+  const q = new URLSearchParams({ period: campPeriod });
+  if (uid) q.set('unit_id', uid);
+
+  const [camps, tl] = await Promise.all([
+    fetch('/api/campaigns?' + q).then(r => r.json()),
+    fetch('/api/leads-timeline?' + q).then(r => r.json()),
+  ]);
+
+  // KPIs
+  const totalGasto = camps.reduce((a, c) => a + c.gasto, 0);
+  const totalLeads = camps.reduce((a, c) => a + c.leads, 0);
+  const cplMedio = totalLeads > 0 ? totalGasto / totalLeads : null;
+  document.getElementById('ck-gasto').textContent = 'R$ ' + totalGasto.toFixed(2).replace('.', ',');
+  document.getElementById('ck-leads').textContent = totalLeads;
+  document.getElementById('ck-cpl').textContent = cplMedio ? 'R$ ' + cplMedio.toFixed(2).replace('.', ',') : '—';
+  document.getElementById('ck-count').textContent = camps.length;
+
+  const labels = { today:'Hoje', yesterday:'Ontem', last_7d:'Últimos 7 dias', last_14d:'Últimos 14 dias', last_30d:'Últimos 30 dias' };
+  document.getElementById('campPeriodLabel').textContent = labels[campPeriod] || '';
+
+  // Gráficos por campanha (top 6)
+  const top = camps.slice(0, 6);
+  const cLabels = top.map(c => c.campaign_name.length > 18 ? c.campaign_name.slice(0,18)+'…' : c.campaign_name);
+
+  if (!chartCampLeads) {
+    chartCampLeads = makeBarChart('chartCampLeads', cLabels, top.map(c => c.leads), '#D4AF37');
+    chartCampGasto = makeBarChart('chartCampGasto', cLabels, top.map(c => c.gasto), '#60a5fa');
+  } else {
+    chartCampLeads.data.labels = cLabels;
+    chartCampLeads.data.datasets[0].data = top.map(c => c.leads);
+    chartCampLeads.update();
+    chartCampGasto.data.labels = cLabels;
+    chartCampGasto.data.datasets[0].data = top.map(c => c.gasto);
+    chartCampGasto.update();
+  }
+
+  // Tabela
+  if (!camps.length) {
+    document.getElementById('campTbl').innerHTML = '<div class="empty">Nenhuma campanha com dados no período. Clique em "⟳ Sync" para buscar.</div>';
+    return;
+  }
+
+  const tipoBadge = t => ({ WA:'<span class="badge b-green">💬 WA</span>', Form:'<span class="badge b-blue">📋 Form</span>', Conv:'<span class="badge b-purple">🛒 Conv</span>' })[t] || '<span class="badge b-muted">—</span>';
+  const cplClass = cpl => cpl == null ? 'b-muted' : cpl > 50 ? 'b-red' : cpl > 25 ? 'b-gold' : 'b-green';
+
+  document.getElementById('campTbl').innerHTML = `<table>
+    <thead><tr>
+      <th>Campanha</th><th>Tipo</th>
+      <th class="r">Gasto</th><th class="r">Leads</th><th class="r">CPL</th>
+      <th class="r">Cliques</th><th class="r">CTR</th><th class="r">Impressões</th>
+    </tr></thead>
+    <tbody>
+    ${camps.map(c => `<tr>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.campaign_name}">${c.campaign_name}</td>
+      <td>${tipoBadge(c.tipo)}</td>
+      <td class="r" style="color:var(--muted)">R$ ${c.gasto.toFixed(2).replace('.',',')}</td>
+      <td class="r"><strong>${c.leads}</strong></td>
+      <td class="r"><span class="badge ${cplClass(c.cpl)}">${c.cpl != null ? 'R$ '+c.cpl.toFixed(2).replace('.',',') : '—'}</span></td>
+      <td class="r" style="color:var(--muted)">${c.cliques.toLocaleString('pt-BR')}</td>
+      <td class="r" style="color:var(--muted)">${c.ctr}%</td>
+      <td class="r" style="color:var(--muted)">${c.impressoes.toLocaleString('pt-BR')}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function setCampPeriod(p, el) {
+  campPeriod = p;
+  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadCampanhas();
+}
+
+// Leads
+async function loadLeads(page) {
+  if (page !== undefined) leadsPage = page;
+  const uid = unitFilter();
+  const url = `/api/leads?page=${leadsPage}&per_page=${PER}` + (uid ? '&unit_id='+uid : '');
+  const d = await (await fetch(url)).json();
+  const pages = Math.ceil(d.total / PER) || 1;
+  document.getElementById('leadsTotal2').textContent = d.total + ' leads';
+  document.getElementById('leadsTbl').innerHTML = renderLeadsTbl(d.items, true);
+  document.getElementById('pageInfo').textContent = `Pág. ${leadsPage}/${pages}`;
+  document.getElementById('prevBtn').disabled = leadsPage <= 1;
+  document.getElementById('nextBtn').disabled = leadsPage >= pages;
+}
+function changePage(d) { loadLeads(leadsPage + d); }
+
+function renderLeadsTbl(items, showAll) {
+  if (!items.length) return '<div class="empty">Nenhum lead ainda. Aguardando webhook da Meta.</div>';
+  return `<table><thead><tr>
+    <th>Nome</th><th>Telefone</th>
+    ${showAll && IS_ADMIN ? '<th>Cliente</th>' : ''}
+    <th>Unidade</th><th>WA</th><th>Planilha</th><th>Recebido</th>
+  </tr></thead><tbody>
+  ${items.map(l => `<tr>
+    <td>${l.nome || '<span style="color:var(--muted)">—</span>'}</td>
+    <td style="font-family:monospace">${l.telefone||'—'}</td>
+    ${showAll && IS_ADMIN ? `<td style="color:var(--muted)">${l.cliente||'—'}</td>` : ''}
+    <td><span class="badge b-gold">${l.unidade||'—'}</span>${l.cidade?`<br><span style="color:var(--muted);font-size:10px">${l.cidade}</span>`:''}</td>
+    <td>${l.conf_whatsapp?'<span class="badge b-green">✓</span>':'<span class="badge b-muted">—</span>'}</td>
+    <td>${l.conf_planilha?'<span class="badge b-green">✓</span>':'<span class="badge b-muted">—</span>'}</td>
+    <td style="color:var(--muted);font-size:11px">${l.recebido_em?new Date(l.recebido_em).toLocaleString('pt-BR'):'—'}</td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// Divergências
+async function loadDivergencias() {
+  const uid = unitFilter();
+  const d = await (await fetch('/api/divergencias' + (uid ? '?unit_id='+uid : ''))).json();
+  if (!d.length) { document.getElementById('divTbl').innerHTML = '<div class="empty">✅ Nenhuma divergência.</div>'; return; }
+  document.getElementById('divTbl').innerHTML = `<table><thead><tr>
+    <th>Cliente</th><th>Unidade</th><th>Campanha</th><th>Data</th>
+    <th class="r">Meta</th><th class="r">Planilha</th><th class="r">WhatsApp</th><th>Descrição</th>
+  </tr></thead><tbody>
+  ${d.map(r => `<tr>
+    <td><strong>${r.cliente}</strong></td>
+    <td><span class="badge b-gold">${r.unidade}</span></td>
+    <td style="font-family:monospace;font-size:10px;color:var(--muted)">${(r.campaign_id||'').slice(-10)}</td>
+    <td style="color:var(--muted)">${r.data||'—'}</td>
+    <td class="r"><span class="badge b-muted">${r.meta}</span></td>
+    <td class="r"><span class="badge ${r.planilha<r.meta?'b-red':'b-green'}">${r.planilha}</span></td>
+    <td class="r"><span class="badge ${r.whatsapp<r.meta?'b-red':'b-green'}">${r.whatsapp}</span></td>
+    <td style="color:var(--muted);font-size:11px">${r.descricao||'—'}</td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// Clientes
+async function loadClientes() {
+  const r = await (await fetch('/api/clients')).json();
+  const el = document.getElementById('clientCards');
+  if (!r.length) { el.innerHTML = '<div class="empty" style="grid-column:1/-1">Nenhum cliente. Clique em "+ Novo cliente".</div>'; return; }
+  el.innerHTML = r.map(c => `
+  <div class="cc">
+    <div class="cc-h">
+      <div><div class="cc-n">${c.name}</div>
+        <div style="display:flex;gap:5px;margin-top:4px">
+          <span class="badge ${c.ativo?'b-green':'b-red'}">${c.ativo?'Ativo':'Inativo'}</span>
+          <span class="badge b-muted">${c.tem_senha?'🔒 Tem senha':'⚠️ Sem senha'}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-left:auto">
+        <button class="btn-sm" onclick="openSenha(${c.id},'${c.name.replace(/'/g,"\\'")}')">🔑 Senha</button>
+        <button class="btn-sm" onclick="openAddUnit(${c.id})">+ Unidade</button>
+      </div>
+    </div>
+    <div class="cc-units">
+      ${!c.unidades.length ? '<div style="color:var(--muted);font-size:11px">Sem unidades ainda.</div>' : ''}
+      ${c.unidades.map(u => `
+      <div class="ur">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div><div class="un">${u.name}</div>${u.city?`<div class="uc">${u.city}</div>`:''}</div>
+          <button class="btn-sm" onclick="openAddBm(${u.id})">+ BM</button>
+        </div>
+        <div class="um">
+          <span class="badge b-muted">${u.bms} BM${u.bms!==1?'s':''}</span>
+          ${u.spreadsheet_url?'<span class="badge b-green">✓ Planilha</span>':'<span class="badge b-red">Sem planilha</span>'}
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`).join('');
+}
+
+// Unidades
+async function loadUnidades() {
+  const r = await (await fetch('/api/units')).json();
+  if (!r.length) { document.getElementById('unitsTbl').innerHTML = '<div class="empty">Sem unidades.</div>'; return; }
+  document.getElementById('unitsTbl').innerHTML = `<table><thead><tr>
+    <th>Unidade</th><th>Cidade</th><th>Planilha</th><th>Status</th>
+  </tr></thead><tbody>
+  ${r.map(u => `<tr>
+    <td><strong>${u.name}</strong></td>
+    <td style="color:var(--muted)">${u.city||'—'}</td>
+    <td>${u.spreadsheet_url?`<a href="${u.spreadsheet_url}" target="_blank" style="color:var(--green);font-size:11px">Abrir ↗</a>`:'<span class="badge b-red">Não configurada</span>'}</td>
+    <td><span class="badge ${u.ativo?'b-green':'b-muted'}">${u.ativo?'Ativa':'Inativa'}</span></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// Sync
+async function syncAgora() {
+  const btn = document.querySelector('.btn-sync');
+  const msg = document.getElementById('syncMsg');
+  btn.disabled = true; btn.textContent = '⟳…';
+  try {
+    const d = await (await fetch('/api/sync', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})).json();
+    if (d.erros?.length) toast(`Sync parcial: ${d.erros.length} erro(s)`, 'err');
+    else toast(`✓ ${d.insights} insights | ${d.divergencias} divergências`, 'ok');
+    msg.textContent = 'Sync: agora';
+    loadStats(); loadAlerts();
+  } catch { toast('Falha na sync', 'err'); }
+  finally { btn.disabled=false; btn.textContent='⟳ Sync'; }
+}
+
+// Modais
+function openModal(type) { document.getElementById('modal'+type).classList.add('open'); }
+function closeAll() { document.querySelectorAll('.overlay').forEach(o => o.classList.remove('open')); }
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) closeAll(); }));
+
+async function openAddUnit(clientId) {
+  const cl = document.getElementById('mu-client');
+  cl.innerHTML = '';
+  const cs = await (await fetch('/api/clients')).json();
+  cs.forEach(c => { const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; if(c.id===clientId) o.selected=true; cl.appendChild(o); });
+  openModal('Unit');
+}
+
+async function openAddBm(unitId) {
+  const sel = document.getElementById('mb-unit');
+  sel.innerHTML = '';
+  const us = await (await fetch('/api/units')).json();
+  us.forEach(u => { const o=document.createElement('option'); o.value=u.id; o.textContent=(IS_ADMIN?u.client_name+' — ':'')+u.name; if(u.id===unitId) o.selected=true; sel.appendChild(o); });
+  openModal('Bm');
+}
+
+function openSenha(clientId, clientName) {
+  document.getElementById('ms-id').value = clientId;
+  document.getElementById('ms-nome').textContent = clientName;
+  document.getElementById('ms-senha').value = '';
+  document.getElementById('ms-conf').value = '';
+  openModal('Senha');
+}
+
+async function salvarSenha() {
+  const id = document.getElementById('ms-id').value;
+  const senha = document.getElementById('ms-senha').value.trim();
+  const conf = document.getElementById('ms-conf').value.trim();
+  if (senha.length < 6) { toast('Senha deve ter ao menos 6 caracteres', 'err'); return; }
+  if (senha !== conf) { toast('As senhas não coincidem', 'err'); return; }
+  const r = await fetch(`/api/clients/${id}/senha`, {method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({senha})});
+  const d = await r.json();
+  if (!r.ok) { toast(d.error||'Erro','err'); return; }
+  toast('✓ Senha atualizada! Envie ao cliente.', 'ok'); closeAll(); loadClientes();
+}
+
+async function salvarClient() {
+  const body = { name: document.getElementById('mc-name').value.trim(), senha: document.getElementById('mc-senha').value.trim() };
+  if (!body.name) { toast('Nome obrigatório','err'); return; }
+  const r = await fetch('/api/clients', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const d = await r.json();
+  if (!r.ok) { toast(d.error||'Erro','err'); return; }
+  toast(`✓ "${d.name}" criado!`, 'ok'); closeAll(); loadClientes(); loadStats();
+}
+
+async function salvarUnit() {
+  const body = { client_id: document.getElementById('mu-client').value, name: document.getElementById('mu-name').value.trim(), city: document.getElementById('mu-city').value.trim(), spreadsheet_url: document.getElementById('mu-sheet').value.trim() };
+  if (!body.client_id || !body.name) { toast('Preencha os campos obrigatórios','err'); return; }
+  const r = await fetch('/api/units', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const d = await r.json();
+  if (!r.ok) { toast(d.error||'Erro','err'); return; }
+  toast(`✓ Unidade "${d.name}" criada!`, 'ok'); closeAll(); loadClientes();
+  await initUnitFilter();
+}
+
+async function salvarBm() {
+  const body = { unit_id: document.getElementById('mb-unit').value, bm_id: document.getElementById('mb-bm').value.trim(), ad_account_id: document.getElementById('mb-aa').value.trim(), system_user_token: document.getElementById('mb-token').value.trim() };
+  if (!body.unit_id || !body.bm_id || !body.ad_account_id || !body.system_user_token) { toast('Todos os campos são obrigatórios','err'); return; }
+  const r = await fetch('/api/bm-accounts', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const d = await r.json();
+  if (!r.ok) { toast(d.error||'Erro','err'); return; }
+  toast('✓ Conta BM adicionada!', 'ok'); closeAll(); loadClientes();
+}
+
+// Também filtrar divergências por unit_id
+const _origApiDiv = '/api/divergencias';
+
+// Init
+(async function() {
+  await initUnitFilter();
+  loadOverview();
+  loadAlerts();
+})();
+</script>
+</body>
+</html>

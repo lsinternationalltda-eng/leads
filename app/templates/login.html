@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LS International — Login</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif}
+.card{background:#141414;border:1px solid #2a2a2a;border-radius:12px;padding:48px 40px;width:100%;max-width:380px;text-align:center}
+.logo{font-size:26px;font-weight:800;letter-spacing:2px;color:#D4AF37;margin-bottom:6px}
+.sub{color:#666;font-size:13px;margin-bottom:36px}
+label{display:block;text-align:left;font-size:12px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+input[type=password]{width:100%;background:#0a0a0a;border:1px solid #333;border-radius:8px;color:#f0f0f0;font-size:15px;padding:12px 14px;outline:none;transition:border .2s}
+input[type=password]:focus{border-color:#D4AF37}
+.btn{margin-top:24px;width:100%;background:#D4AF37;border:none;border-radius:8px;color:#0a0a0a;cursor:pointer;font-size:15px;font-weight:700;letter-spacing:.5px;padding:13px;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.erro{background:#2a1515;border:1px solid #5a2020;border-radius:8px;color:#e05252;font-size:13px;margin-bottom:20px;padding:10px 14px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">LS INTERNATIONAL</div>
+  <div class="sub">Plataforma de Auditoria de Leads</div>
+  {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
+  <form method="POST">
+    <label>Senha de acesso</label>
+    <input type="password" name="senha" placeholder="••••••••" autofocus required>
+    <button class="btn" type="submit">Entrar</button>
+  </form>
+</div>
+</body>
+</html>
