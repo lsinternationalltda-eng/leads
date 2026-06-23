@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime, timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -74,10 +75,8 @@ scheduler.add_job(collect_insights_job, "cron", hour=6, minute=0, id="collect_in
 scheduler.add_job(reconciliation_job, "cron", hour=7, minute=0, id="reconciliation")
 scheduler.start()
 
-if __name__ == "__main__":
-    import os as _os
-    port = int(_os.getenv("PORT", 5000))
-    try:
-        app.run(debug=False, host="0.0.0.0", port=port)
-    finally:
-        scheduler.shutdown()
+port = int(os.getenv("PORT", 5000))
+try:
+    app.run(debug=False, host="0.0.0.0", port=port)
+finally:
+    scheduler.shutdown()
