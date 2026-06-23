@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 
 logging.basicConfig(
@@ -8,6 +9,10 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+_db_url = os.getenv("DATABASE_URL", "")
+_db_tipo = "postgresql" if ("postgresql" in _db_url or "postgres" in _db_url) else ("sqlite" if "sqlite" in _db_url else "nao_definido")
+logger.info("DATABASE_URL tipo detectado: %s", _db_tipo)
 
 try:
     from main import app
