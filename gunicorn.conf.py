@@ -6,4 +6,4 @@ threads = 4
 timeout = 120
 accesslog = "-"
 errorlog = "-"
-loglevel = "info"
+loglevel = "debug"
